@@ -26,6 +26,8 @@ struct LMN {
   Linx::Index n; // -n_max..n_max
 };
 
+Linx::Raster<ComplexInterpolant2D, 3> load_and_interpolate_amplitude_data(lmax, nmax, m_interpolants); // FIXME
+
 class AmplitudeCarrier {
 
 public:
@@ -34,7 +36,7 @@ public:
   Linx::Raster<ComplexInterpolant2D, 3> m_interpolants; // FIXME Single ComplexSpline2D?
 
   AmplitudeCarrier(Linx::Index lmax, Linx::Index nmax) :
-      m_interpolants {load_and_interpolate_amplitude_data(lmax, nmax, m_interpolants)}, m_lMax(lmax), m_nMax {nmax} {}
+      m_interpolants(load_and_interpolate_amplitude_data(lmax, nmax, m_interpolants)), m_lMax(lmax), m_nMax {nmax} {}
 
   template <typename Tpe, typename Tlmn>
   Linx::Raster<std::complex<double>> interpolate(const Tpe& pes, const Tlmn& lmns) {
