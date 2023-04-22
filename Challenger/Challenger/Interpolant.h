@@ -62,8 +62,21 @@ private:
   gsl_spline2d* m_spline;
 };
 
-template <Linx::Index N>
-using Interpolant = std::conditional_t<N == 1, Interpolant1D, Interpolant2D>;
+class ComplexInterpolant2D {
+
+public:
+  template <typename TSeq, typename TMap>
+  ConstantInterpolant2D(const TSeq& x, const TSeq& y, const TMap& z) :
+      m_real(x.section(0), y.section(0), z.section(0)), m_imag(x.section(1), y.section(1), z.section(1)) {}
+
+  std::complex<double> operator()(double x, double y) const {
+    return {m_real(x), m_imag(x, y)};
+  }
+
+private:
+  Interpolant2D m_real;
+  Interpolant2D m_imag;
+};
 
 } // namespace Few
 
