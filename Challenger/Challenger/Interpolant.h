@@ -66,11 +66,11 @@ class ComplexInterpolant2D {
 
 public:
   template <typename TSeq, typename TMap>
-  ConstantInterpolant2D(const TSeq& x, const TSeq& y, const TMap& z) :
+  ComplexInterpolant2D(const TSeq& x, const TSeq& y, const TMap& z) :
       m_real(x.section(0), y.section(0), z.section(0)), m_imag(x.section(1), y.section(1), z.section(1)) {}
 
   std::complex<double> operator()(double x, double y) const {
-    return {m_real(x), m_imag(x, y)};
+    return std::complex<double>(m_real(x, y), m_imag(x, y));
   }
 
 private:
