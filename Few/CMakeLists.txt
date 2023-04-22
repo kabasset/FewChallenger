@@ -12,7 +12,7 @@ elements_add_library(Few src/lib/*.cpp
                     LINK_LIBRARIES ElementsKernel GSL HDF5
                     PUBLIC_HEADERS Few)
 
-elements_add_unit_test(Interpolant tests/src/Interpolant_test.cpp 
-                      EXECUTABLE Few_Interpolant_test
+elements_add_unit_test(Amplitude tests/src/Amplitude_test.cpp 
+                      EXECUTABLE Few_Amplitude_test
                       LINK_LIBRARIES Few
                       TYPE Boost)
