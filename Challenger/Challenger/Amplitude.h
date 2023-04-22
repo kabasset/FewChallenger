@@ -11,22 +11,30 @@
 
 namespace Challenger {
 
-// The 11 below means the lmax = 10
-struct Amplitudes {
-  static constexpr Linx::Index lmax = 10;
-  std::array<Linx::Raster<Interpolant, 3>, lmax + 1> re;
-  std::array<Linx::Raster<Interpolant, 3>, lmax + 1> im;
-  // FIXME 4D raster
+struct PE {
+  double p;
+  double e;
+
+  inline double y() const {
+    return std::log(p - 2. * e - 2.1);
+  }
+};
+
+struct LMN {
+  Linx::Index l; // 2..l_max
+  Linx::Index m; // 0..l
+  Linx::Index n; // -n_max..n_max
 };
 
 class AmplitudeCarrier {
 
 public:
-  Amplitudes m_amplitudes; // FIXME Linx::Raster<Interpolant, 4> m_amplitudes;
-  Linx::Index m_nmax;
+  Linx::Index m_lMax;
+  Linx::Index m_nMax;
+  Linx::Raster<ComplexInterpolant2D, 3> m_interpolants; // FIXME Single ComplexSpline2D?
 
   AmplitudeCarrier(Linx::Index lmax, Linx::Index nmax) :
-      m_amplitudes {load_and_interpolate_amplitude_data(lmax, nmax, m_amplitudes)}, m_nmax {nmax} {}
+      m_interpolants {load_and_interpolate_amplitude_data(lmax, nmax, m_interpolants)}, m_lMax(lmax), m_nMax {nmax} {}
 
   template <typename Tpe, typename Tlmn>
   Linx::Raster<std::complex<double>> interpolate(const Tpe& pes, const Tlmn& lmns) {
@@ -36,14 +44,15 @@ public:
     for (const auto& pe : pes) { // FIXME structured binding
       const auto p = pe.p;
       const auto e = pe.e;
-      const auto y = std::log(p - 2. * e - 2.1);
-      for (const auto& lmn : lmns) { // FIXME structured binding
-        const auto l = lmn.l;
-        const auto m = lmn.m;
-        const auto n = lmn.n;
-        *it = m_amplitudes.re[{l, m, n + m_nmax}](y, e), m_amplitudes.im[{l, m, n + m_nmax}](y, e);
-        // FIXME *it = m_amplitudes[{l, m, n +m_nmax}](y, e);
-        ++it;
+      const auto y = pe.y();
+      Linx::Position<3> p;
+      for (Linx::Index l = 2; l <= m_lMax; ++l) {
+        for (Linx::Index m = 0; m <= l; ++m) {
+          for (Linx::Index n = -m_nMax; n <= m_nMax; ++n) {
+            p = {l - 2, m, n + m_nMax}; // FIXME compactify
+            amplitude[p] = m_interpolants[p](y, e);
+          }
+        }
       }
     }
   }
