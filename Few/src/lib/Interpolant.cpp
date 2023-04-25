@@ -3,8 +3,6 @@
 
 #include "Few/Interpolant.h"
 
-#include <algorithm>
-
 namespace Few {
 
 // Construct a 1D interpolant of f(x)

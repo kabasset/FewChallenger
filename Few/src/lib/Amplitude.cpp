@@ -38,6 +38,10 @@ void create_amplitude_interpolant(
 
   /* read dataset */
   // H5LTread_dataset_double(file_id, dataset_name, modeData); // FIXME
+  for (int i = 0; i < Ne * Ny; ++i) {
+    modeData[2 * i] = i;
+    modeData[2 * i + 1] = -i;
+  }
 
   Vector modeData_re(Ne * Ny);
   Vector modeData_im(Ne * Ny);
@@ -68,11 +72,9 @@ void load_and_interpolate_amplitude_data(int lmax, int nmax, struct waveform_amp
 
   /* get the dimensions of the dataset */
   // H5LTget_dataset_info(file_id, "/grid", dims, NULL, NULL); // FIXME
-  dims[0] = 10; // FIXME lmax guess from filename
-  dims[1] = 30; // FIXME nmax guess from filename
 
   /* create an appropriately sized array for the data */
-  double* gridRaw = new double[dims[0] * dims[1]];
+  // double* gridRaw = new double[dims[0] * dims[1]]; // FIXME
 
   /* read dataset */
   // H5LTread_dataset_double(file_id, "/grid", gridRaw); // FIXME
@@ -82,14 +84,14 @@ void load_and_interpolate_amplitude_data(int lmax, int nmax, struct waveform_amp
 
   // convert p -> y
   for (int i = 0; i < Ny; i++) {
-    double p = gridRaw[1 + 4 * i];
-    double e = 0;
+    // double p = gridRaw[1 + 4 * i];
+    // double e = 0;
 
-    ys[Ny - 1 - i] = log(0.1 * (10. * p - 20 * e - 21.));
+    ys[i] = i; // FIXME ys[Ny - 1 - i] = std::log(0.1 * (10. * p - 20 * e - 21.));
   }
 
   for (int i = 0; i < Ne; i++) {
-    es[i] = gridRaw[2 + 4 * Ny * i];
+    es[i] = i; // FIXME es[i] = gridRaw[2 + 4 * Ny * i];
   }
 
   for (int l = 2; l <= lmax; l++) {
@@ -120,7 +122,7 @@ void load_and_interpolate_amplitude_data(int lmax, int nmax, struct waveform_amp
     }
   }
 
-  delete[] gridRaw;
+  // delete[] gridRaw;
 }
 
 // Amplitude Carrier is class for interaction with python carrying gsl interpolant information

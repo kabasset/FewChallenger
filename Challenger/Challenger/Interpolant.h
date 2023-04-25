@@ -9,9 +9,10 @@
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_spline2d.h>
+#include <iostream> // std::cout
 #include <vector>
 
-namespace Few {
+namespace Challenger {
 
 class Interpolant1D {
 
@@ -29,6 +30,13 @@ public:
 
   double operator()(double x) const {
     return gsl_spline_eval(m_spline, x, m_xacc);
+  }
+
+  bool operator==(const Interpolant1D& rhs) const {
+    if (this == &rhs) {
+      return true;
+    }
+    return this->m_spline == rhs.m_spline;
   }
 
 private:
@@ -56,6 +64,13 @@ public:
     return gsl_spline2d_eval(m_spline, x, y, m_xacc, m_yacc);
   }
 
+  bool operator==(const Interpolant2D& rhs) const {
+    if (this == &rhs) {
+      return true;
+    }
+    return this->m_spline == rhs.m_spline;
+  }
+
 private:
   gsl_interp_accel* m_xacc;
   gsl_interp_accel* m_yacc;
@@ -67,10 +82,17 @@ class ComplexInterpolant2D {
 public:
   template <typename TSeq, typename TMap>
   ComplexInterpolant2D(const TSeq& x, const TSeq& y, const TMap& z) :
-      m_real(x.section(0), y.section(0), z.section(0)), m_imag(x.section(1), y.section(1), z.section(1)) {}
+      m_real(x, y, z.section(0)), m_imag(x, y, z.section(1)) {}
 
   std::complex<double> operator()(double x, double y) const {
     return std::complex<double>(m_real(x, y), m_imag(x, y));
+  }
+
+  bool operator==(const ComplexInterpolant2D& rhs) const {
+    if (this == &rhs) {
+      return true;
+    }
+    return this->m_real == rhs.m_real && this->m_imag == rhs.m_imag;
   }
 
 private:
@@ -78,6 +100,6 @@ private:
   Interpolant2D m_imag;
 };
 
-} // namespace Few
+} // namespace Challenger
 
 #endif // _CHALLENGER_INTERPOLANT_H
