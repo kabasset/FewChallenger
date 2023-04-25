@@ -37,6 +37,27 @@ BOOST_AUTO_TEST_CASE(complex_test) {
   BOOST_TEST(out.imag() == 0);
 }
 
+BOOST_AUTO_TEST_CASE(raster_test) {
+  const std::vector<double> x {1, 2, 3, 4};
+  const std::vector<double> y {1, 10, 100, 1000};
+
+  Linx::AlignedRaster<Challenger::ComplexInterpolant2D, 3> interpolants({2, 2, 2}, nullptr, 0);
+  for (auto& e : interpolants) {
+    const Linx::Raster<double, 3> z(
+        {x.size(), y.size(), 2},
+        {1, 2, 3, 4, 10, 20, 30, 40, 100, 200, 300, 400, 1000, 2000, 3000, 4000,
+         0, 0, 0, 0, 0,  0,  0,  0,  0,   0,   0,   0,   0,    0,    0,    0});
+    e = Challenger::ComplexInterpolant2D(x, y, z);
+  }
+
+  for (const auto& e : interpolants) {
+    const auto out = e(2.5, 25);
+    BOOST_TEST(out.real() > 20);
+    BOOST_TEST(out.real() < 300);
+    BOOST_TEST(out.imag() == 0);
+  }
+}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END()
