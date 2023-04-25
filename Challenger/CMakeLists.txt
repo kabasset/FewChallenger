@@ -11,6 +11,10 @@ elements_add_library(Challenger src/lib/*.cpp
                     LINK_LIBRARIES ElementsKernel LinxCore GSL
                     PUBLIC_HEADERS Challenger)
 
+elements_add_unit_test(Interpolant tests/src/Interpolant_test.cpp 
+                    EXECUTABLE Challenger_Interpolant_test
+                    LINK_LIBRARIES Challenger
+                    TYPE Boost)
 elements_add_unit_test(Amplitude tests/src/Amplitude_test.cpp 
                     EXECUTABLE Challenger_Amplitude_test
                     LINK_LIBRARIES Challenger
