@@ -33,8 +33,8 @@ bool operator==(const Pe& lhs, const Pe& rhs) {
  */
 using Lmn = Linx::Position<3>;
 
-template <typename T>
-ComplexInterpolant2D createInterpolant(const Linx::Position<3>& lmn, const T& ys, const T& es) {
+template <typename TSeq, typename TMap>
+ComplexInterpolant2D createInterpolant(const Linx::Position<3>& lmn, const TSeq& ys, const TSeq& es, TMap&& z) {
 
   (void)lmn; // Silent unused warning (would be used to load from file)
 
@@ -44,20 +44,19 @@ ComplexInterpolant2D createInterpolant(const Linx::Position<3>& lmn, const T& ys
     zipped[2 * i + 1] = -i;
   }
 
-  Linx::Raster<double, 3> realImag({Ny, Ne, 2});
-
   // FIXME can we avoid this, by refactoring the interpolants?
   for (int e = 0; e < Ne; ++e) {
     for (int y = 0; y < Ny; ++y) {
-      realImag[{y, e, 0}] = zipped[{0, Ny - 1 - y, e}];
-      realImag[{y, e, 1}] = zipped[{1, Ny - 1 - y, e}];
+      std::forward<TMap>(z)[{y, e, 0}] = zipped[{0, Ny - 1 - y, e}];
+      std::forward<TMap>(z)[{y, e, 1}] = zipped[{1, Ny - 1 - y, e}];
     }
   }
 
-  return ComplexInterpolant2D(ys, es, realImag);
+  return ComplexInterpolant2D(ys, es, z);
 }
 
-Linx::AlignedRaster<ComplexInterpolant2D, 3> createInterpolantRaster(Linx::Index lmax, Linx::Index nmax) {
+template <typename TMap, typename TInterpolants>
+void fillInterpolantRaster(Linx::Index lmax, Linx::Index nmax, TMap& z, TInterpolants& interpolants) {
 
   Linx::Raster<double, 1> ys({Ny});
   for (Linx::Index i = 0; i < Ny; i++) { // Not range() for faire comparison with FEW
@@ -69,17 +68,29 @@ Linx::AlignedRaster<ComplexInterpolant2D, 3> createInterpolantRaster(Linx::Index
     es[i] = i;
   }
 
-  Linx::AlignedRaster<ComplexInterpolant2D, 3> out({nmax * 2 + 1, lmax + 1, lmax - 1}, nullptr, 0);
   Linx::Position<3> pos;
+  Linx::Index i = 0;
   for (Linx::Index l = 2; l <= lmax; ++l) { // Idem
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
         pos = {n + nmax, m, l - 2};
-        out[pos] = createInterpolant({l, m, n}, ys, es);
+        auto section = std::forward<TMap>(z).section(i);
+        interpolants[pos] = createInterpolant({l, m, n}, ys, es, section);
+        ++i;
       }
     }
   }
+}
 
+constexpr Linx::Index modeCount(Linx::Index lmax, Linx::Index nmax) {
+  Linx::Index out = 0;
+  for (Linx::Index l = 2; l <= lmax; ++l) { // Idem
+    for (Linx::Index m = 0; m <= l; ++m) {
+      for (Linx::Index n = -nmax; n <= nmax; ++n) {
+        ++out;
+      }
+    }
+  }
   return out;
 }
 
@@ -88,10 +99,14 @@ class AmplitudeCarrier {
 public:
   Linx::Index m_lmax;
   Linx::Index m_nmax;
+  Linx::AlignedRaster<double, 4> m_z;
   Linx::AlignedRaster<ComplexInterpolant2D, 3> m_interpolants; // FIXME Single ComplexSpline2D?
 
   AmplitudeCarrier(Linx::Index lmax, Linx::Index nmax) :
-      m_lmax(lmax), m_nmax {nmax}, m_interpolants(createInterpolantRaster(m_lmax, m_nmax)) {}
+      m_lmax(lmax), m_nmax(nmax), m_z({Ny, Ne, 2, modeCount(m_lmax, m_nmax)}, nullptr, 0),
+      m_interpolants({m_nmax * 2 + 1, m_lmax + 1, m_lmax - 1}, nullptr, 0) {
+    fillInterpolantRaster(m_lmax, m_nmax, m_z, m_interpolants);
+  }
 
   template <typename Tpe, typename Tlmn>
   Linx::Raster<std::complex<double>> interpolate(const Tpe& pes, const Tlmn& lmns) {

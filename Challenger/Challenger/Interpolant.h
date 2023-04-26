@@ -54,6 +54,22 @@ public:
     gsl_spline2d_init(m_spline, x.data(), y.data(), z.data(), x.size(), y.size());
   }
 
+  Interpolant2D(Interpolant2D&& rhs) : m_xacc(rhs.m_xacc), m_yacc(rhs.m_yacc), m_spline(rhs.m_spline) {
+    rhs.m_xacc = nullptr;
+    rhs.m_yacc = nullptr;
+    rhs.m_spline = nullptr;
+  }
+
+  Interpolant2D& operator=(Interpolant2D&& rhs) {
+    m_xacc = rhs.m_xacc;
+    m_yacc = rhs.m_yacc;
+    m_spline = rhs.m_spline;
+    rhs.m_xacc = nullptr;
+    rhs.m_yacc = nullptr;
+    rhs.m_spline = nullptr;
+    return *this;
+  }
+
   ~Interpolant2D() {
     gsl_spline2d_free(m_spline);
     gsl_interp_accel_free(m_xacc);
