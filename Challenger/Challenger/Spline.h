@@ -22,6 +22,11 @@ class OrientedSpline {
 
 public:
   /**
+   * @brief Default constructor, for compatibility with `std::vector`.
+   */
+  OrientedSpline() {}
+
+  /**
    * @brief Constructor.
    * @param u The input knots positions (strictly increasing)
    * @param x The output samples positions (strictly increasing and in u's interval)
@@ -231,8 +236,8 @@ class SeparableSpline {
 
 public:
   SeparableSpline(const Linx::Vector<std::vector<double>, N>& u, const Linx::Vector<std::vector<double>, N>& x) :
-      m_splines(u.size(), nullptr, 0) {
-    for (Linx::Index i = 0; i < m_splines.size(); ++i) {
+      m_splines(u.size()) {
+    for (std::size_t i = 0; i < m_splines.size(); ++i) {
       m_splines[i] = OrientedSpline(u[i], x[i]);
     }
   }
@@ -243,7 +248,7 @@ public:
   template <typename TMap>
   Linx::Raster<typename TMap::Value, TMap::Dimension> operator()(const TMap& v) const {
     Linx::Position<TMap::Dimension> shape(m_splines.size());
-    for (Linx::Index i = 0; i < shape.size(); ++i) {
+    for (std::size_t i = 0; i < shape.size(); ++i) {
       shape[i] = m_splines[i].samplePositions().size();
     }
     Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
@@ -253,11 +258,25 @@ public:
 private:
   template <Linx::Index I, typename TMap>
   Linx::Raster<typename TMap::Value, TMap::Dimension> interpolateAlong(const TMap& v) const {
-    Linx::Raster<typename TMap::Value, TMap::Dimension> y(v.shape());
+    if constexpr (I <= 0) {
+      return interpolateAlong0(v);
+    } else {
+      auto shape = v.shape();
+      shape[I] = m_splines[I].samplePositions().size();
+      Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
+      return interpolateAlong<I - 1>(y);
+    }
+  }
+
+  template <typename TMap>
+  Linx::Raster<typename TMap::Value, TMap::Dimension> interpolateAlong0(const TMap& v) const {
+    auto shape = v.shape();
+    shape[0] = m_splines[0].samplePositions().size();
+    Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
     return y;
   }
 
-  Linx::Sequence<OrientedSpline, Linx::AlignedBuffer<OrientedSpline>> m_splines;
+  std::vector<OrientedSpline> m_splines;
 };
 
 } // namespace Challenger
