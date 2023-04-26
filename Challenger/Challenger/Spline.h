@@ -65,6 +65,16 @@ public:
   }
 
   /**
+   * @brief Equality operator.
+   */
+  bool operator==(const OrientedSpline& rhs) const {
+    if (this == &rhs) {
+      return true;
+    }
+    return m_u == rhs.m_u && m_x == rhs.m_x;
+  }
+
+  /**
    * @brief Get the knot x's.
    */
   const std::vector<double>& knotPositions() const {
@@ -214,6 +224,40 @@ private:
    * @brief The pre-computed constants.
    */
   std::vector<Coefficients> m_k;
+};
+
+template <Linx::Index N = 2>
+class SeparableSpline {
+
+public:
+  SeparableSpline(const Linx::Vector<std::vector<double>, N>& u, const Linx::Vector<std::vector<double>, N>& x) :
+      m_splines(u.size(), nullptr, 0) {
+    for (Linx::Index i = 0; i < m_splines.size(); ++i) {
+      m_splines[i] = OrientedSpline(u[i], x[i]);
+    }
+  }
+
+  /**
+   * @brief Interpolate.
+   */
+  template <typename TMap>
+  Linx::Raster<typename TMap::Value, TMap::Dimension> operator()(const TMap& v) const {
+    Linx::Position<TMap::Dimension> shape(m_splines.size());
+    for (Linx::Index i = 0; i < shape.size(); ++i) {
+      shape[i] = m_splines[i].samplePositions().size();
+    }
+    Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
+    return interpolateAlong<N - 1>(v);
+  }
+
+private:
+  template <Linx::Index I, typename TMap>
+  Linx::Raster<typename TMap::Value, TMap::Dimension> interpolateAlong(const TMap& v) const {
+    Linx::Raster<typename TMap::Value, TMap::Dimension> y(v.shape());
+    return y;
+  }
+
+  Linx::Sequence<OrientedSpline, Linx::AlignedBuffer<OrientedSpline>> m_splines;
 };
 
 } // namespace Challenger

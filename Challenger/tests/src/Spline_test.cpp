@@ -39,6 +39,25 @@ BOOST_AUTO_TEST_CASE(oriented_complex_test) {
   }
 }
 
+BOOST_AUTO_TEST_CASE(separable_real_test) {
+  const std::vector<double> u0 {1, 2, 3, 4};
+  const std::vector<double> u1 {1, 10, 100};
+  const std::vector<double> x0 {1.1, 2.5, 3.9};
+  const std::vector<double> x1 {2., 50.};
+  Challenger::SeparableSpline<2> spline({u0, u1}, {x0, x1});
+  const Linx::Raster<double> v({u0.size(), u1.size()}, {1, 2, 3, 4, 10, 20, 30, 40, 100, 200, 300, 400});
+  const auto out = spline(v);
+  BOOST_TEST(out.size() == x0.size() * x1.size());
+  // for (const auto& p : out.domain()) {
+  //   BOOST_TEST(out[p] > v[p - {0, 1}]);
+  //   BOOST_TEST(out[p] > v[p - {1, 0}]);
+  //   BOOST_TEST(out[p] > v[p - {1, 1}]);
+  //   BOOST_TEST(out[p] < v[p + {0, 1}]);
+  //   BOOST_TEST(out[p] < v[p + {1, 0}]);
+  //   BOOST_TEST(out[p] < v[p + {1, 1}]);
+  // }
+}
+
 //-----------------------------------------------------------------------------
 
 BOOST_AUTO_TEST_SUITE_END()
