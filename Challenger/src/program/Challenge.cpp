@@ -12,14 +12,14 @@
 
 using Duration = std::chrono::milliseconds;
 
-std::complex<double> runFew() {
+std::complex<double> runFew(int size) {
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
   Few::AmplitudeCarrier carrier(lmax, nmax, "");
 
-  std::vector<double> ps {4.5};
-  std::vector<double> es {14.5};
+  std::vector<double> ps(size, 4.5);
+  std::vector<double> es(size, 14.5);
   std::vector<int> ls;
   std::vector<int> ms;
   std::vector<int> ns;
@@ -41,13 +41,13 @@ std::complex<double> runFew() {
   return std::accumulate(out.begin(), out.end(), std::complex<double> {});
 }
 
-std::complex<double> runChallenger() {
+std::complex<double> runChallenger(int size) {
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
   Challenger::AmplitudeCarrier carrier(lmax, nmax);
 
-  std::vector<Challenger::Pe> pes {Challenger::Pe {4.5, 14.5}};
+  std::vector<Challenger::Pe> pes(size, Challenger::Pe {4.5, 14.5});
   std::vector<Challenger::Lmn> lmns;
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
@@ -68,22 +68,24 @@ public:
   std::pair<OptionsDescription, PositionalOptionsDescription> defineProgramArguments() override {
     Linx::ProgramOptions options;
     options.named("case", "Test case: f (Few), c (Challenger)", 'f');
+    options.named("size", "Number of trajectory points", 1);
     return options.asPair();
   }
 
   ExitCode mainMethod(std::map<std::string, VariableValue>& args) override {
 
     Logging logger = Logging::getLogger("Challenge");
+    const int size = args["size"].as<int>();
 
     logger.info() << "Running benchmark...";
     Linx::Chronometer<Duration> chrono;
     chrono.start();
     switch (args["case"].as<char>()) {
       case 'f':
-        runFew();
+        runFew(size);
         break;
       case 'c':
-        runChallenger();
+        runChallenger(size);
         break;
       default:
         logger.error("Unknown test case.");
