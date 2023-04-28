@@ -1,15 +1,15 @@
-/// @copyright 2020, Niels Warburton, Michael L. Katz, Alvin J.K. Chua, Scott A. Hughes
+/// @copyright 2023, Antoine Basset
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef _CHALLENGER_AMPLITUDE_H
-#define _CHALLENGER_AMPLITUDE_H
+#ifndef _MEMORYCHALLENGER_AMPLITUDE_H
+#define _MEMORYCHALLENGER_AMPLITUDE_H
 
-#include "Challenger/Interpolant.h"
 #include "LinxCore/Raster.h"
+#include "MemoryChallenger/Interpolant.h"
 
 #include <array>
 
-namespace Challenger {
+namespace MemoryChallenger {
 
 static constexpr Linx::Index Ny = 50;
 static constexpr Linx::Index Ne = 33;
@@ -122,6 +122,6 @@ public:
   }
 };
 
-} // namespace Challenger
+} // namespace MemoryChallenger
 
 #endif // _FEW_AMPLITUDE_H

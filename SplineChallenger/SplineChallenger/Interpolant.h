@@ -1,14 +1,14 @@
 /// @copyright 2023, Antoine Basset
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef _CHALLENGER_SPLINE_H
-#define _CHALLENGER_SPLINE_H
+#ifndef _SPLINECHALLENGER_INTERPOLANT_H
+#define _SPLINECHALLENGER_INTERPOLANT_H
 
 #include "LinxCore/Raster.h"
 
 #include <complex>
 
-namespace Challenger {
+namespace SplineChallenger {
 
 /**
  * @brief Spline interpolation and integration.
@@ -252,19 +252,25 @@ public:
       shape[i] = m_splines[i].samplePositions().size();
     }
     Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
-    return interpolateAlong<N - 1>(v);
+    return interpolateUpTo<N - 1>(v);
   }
 
 private:
   template <Linx::Index I, typename TMap>
-  Linx::Raster<typename TMap::Value, TMap::Dimension> interpolateAlong(const TMap& v) const {
+  Linx::Raster<typename TMap::Value, TMap::Dimension> interpolateUpTo(const TMap& v) const {
     if constexpr (I <= 0) {
       return interpolateAlong0(v);
     } else {
+      using T = typename TMap::Value;
       auto shape = v.shape();
       shape[I] = m_splines[I].samplePositions().size();
-      Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
-      return interpolateAlong<I - 1>(y);
+      Linx::Raster<T, TMap::Dimension> y(shape);
+      // for (const auto& p : Linx::project<I>(y.domain())) {
+      //   std::vector<T> values;
+      //   const auto line = m_splines[0](values);
+      //   std::copy(line.begin(), line.end(), &y[p]);
+      // }
+      return interpolateUpTo<I - 1>(y);
     }
   }
 
@@ -273,12 +279,16 @@ private:
     auto shape = v.shape();
     shape[0] = m_splines[0].samplePositions().size();
     Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
+    for (const auto& p : Linx::project(y.domain())) {
+      const auto line = m_splines[0](&v[p]);
+      std::copy(line.begin(), line.end(), &y[p]);
+    }
     return y;
   }
 
   std::vector<OrientedSpline> m_splines;
 };
 
-} // namespace Challenger
+} // namespace SplineChallenger
 
 #endif

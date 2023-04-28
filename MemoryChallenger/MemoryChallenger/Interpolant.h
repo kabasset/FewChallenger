@@ -1,18 +1,17 @@
-/// @copyright 2020, Niels Warburton, Michael L. Katz, Alvin J.K. Chua, Scott A. Hughes
+/// @copyright 2023, Antoine Basset
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef _CHALLENGER_INTERPOLANT_H
-#define _CHALLENGER_INTERPOLANT_H
+#ifndef _MEMORYCHALLENGER_INTERPOLANT_H
+#define _MEMORYCHALLENGER_INTERPOLANT_H
 
 #include "LinxCore/Raster.h"
 
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline.h>
 #include <gsl/gsl_spline2d.h>
-#include <iostream> // std::cout
 #include <vector>
 
-namespace Challenger {
+namespace MemoryChallenger {
 
 class Interpolant1D {
 
@@ -116,6 +115,6 @@ private:
   Interpolant2D m_imag;
 };
 
-} // namespace Challenger
+} // namespace MemoryChallenger
 
 #endif // _CHALLENGER_INTERPOLANT_H

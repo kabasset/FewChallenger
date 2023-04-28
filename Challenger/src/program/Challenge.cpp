@@ -1,9 +1,8 @@
 /// @copyright 2023, Antoine Basset
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include "Challenger/Amplitude.h"
+#include "Challenger/Challenger.h"
 #include "ElementsKernel/ProgramHeaders.h"
-#include "Few/Amplitude.h"
 #include "LinxRun/Chronometer.h"
 #include "LinxRun/ProgramOptions.h"
 
@@ -41,14 +40,14 @@ std::complex<double> runFew(int size) {
   return std::accumulate(out.begin(), out.end(), std::complex<double> {});
 }
 
-std::complex<double> runChallenger(int size) {
+std::complex<double> runMemoryChallenger(int size) {
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
-  Challenger::AmplitudeCarrier carrier(lmax, nmax);
+  MemoryChallenger::AmplitudeCarrier carrier(lmax, nmax);
 
-  std::vector<Challenger::Pe> pes(size, Challenger::Pe {4.5, 14.5});
-  std::vector<Challenger::Lmn> lmns;
+  std::vector<MemoryChallenger::Pe> pes(size, MemoryChallenger::Pe {4.5, 14.5});
+  std::vector<MemoryChallenger::Lmn> lmns;
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
@@ -84,8 +83,8 @@ public:
       case 'f':
         runFew(size);
         break;
-      case 'c':
-        runChallenger(size);
+      case 'm':
+        runMemoryChallenger(size);
         break;
       default:
         logger.error("Unknown test case.");
