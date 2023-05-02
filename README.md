@@ -9,3 +9,52 @@ and the spline interpolation implementation in [SplineChallenger](SplineChalleng
 
 A benchmark is implemented as executable [Challenge](Challenger/src/program/Challenge.cpp).
 Preliminary results show a ~20% speed-up with memory optimization (~5s vs. ~4s for 1000 trajectory points).
+
+# FEW
+
+The amplitude `A_lmn(p, e)` is a complex-valued function.
+It is known for some values (the knots) of its parameters and has to be interpolated over a vector of `(p, e)`'s.
+The so-called modes are such that:
+
+* `l` ranges from 2 to `lmax`;
+* `m` ranges from 0 to `l`;
+* `n` ranges from `-nmax` to `nmax`.
+
+In the original code, one pair of real interpolants (of type `gsl_spline`) is instantiated for each mode, to account for the real and imaginary parts.
+They are organized in some chain of pointers `gsl_spline***`.
+
+Each pair of interpolants is then applied to each `(p, e)` to get the amplitude real and imaginary parts.
+For each mode, the interpolant is called on the same positions, i.e. there is a single vector of `(p, e)`'s for all the `(l, m, n)`'s.
+
+The default benchmark uses the following sizing parameters:
+
+* `lmax` = 10;
+* `nmax` = 30;
+* There are 33 x 50 knots;
+* There are 1000 interpolation coordinates.
+
+# MemoryChallenger
+
+The memory challenge consists in rearranging the interpolants in contiguous memory similar to `Interpolant[]`,
+with some indexing scheme which does the mapping between 1D index in the array and `(l, m, n)`.
+
+For simplicity, this is done for now in some ndarray (`Linx::Raster`).
+It has a box domain, such that half the storage is wasted (where `m > l`).
+Still, data is better packed and cache friendlier.
+
+Without changing the actual computation, this refactoring of the memory layout saves around 20% of computation time.
+
+# SplineChallenger
+
+Instead of using a pair of real interpolants for the real and imaginary parts of the amplitude, one can directly create complex interpolants.
+Given that most of the spline coefficients are real anyway, this should almost divide the computation time by 2.
+
+Additionally, given that the grid of positions to interpolate on does depend on the mode, many spline coefficients can be computed intependently of `(l, m, n)`.
+Let us name `U, V_lmn` the knot positions and values, and `X, Y_lmn` the interpolated positions and values.
+Instead of computing one interpolant for each `(l, m, n)` and applying it to the `X`'s, we propose to compute a single interpolant for the `U`'s and `X`'s.
+A lot of spline coefficients can be computed already.
+Then, only the coefficients which depend on `V_lmn` must be computed to get `Y_lmn` for each mode.
+
+Large speedups can be expected in an ideal world.
+
+Yet, we did not find a suitable library and should implement one...
