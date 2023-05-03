@@ -15,15 +15,32 @@ namespace SplineChallenger {
 static constexpr Linx::Index Ny = 50;
 static constexpr Linx::Index Ne = 33;
 
-class AmplitudeCarrier {
+Linx::Vector<std::vector<double>, 2> loadGrid() {
 
-public:
-  Linx::AlignedRaster<std::complex<double>, 2> m_z;
-  Interpolant m_interpolant;
+  std::vector<double> ys(Ny);
+  for (Linx::Index i = 0; i < Ny; i++) {
+    const double p = 10 * (i + 1);
+    const double e = 0;
+    ys[i] = std::log(p - 2. * e - 2.1);
+  }
 
-  tempate<typename TGrid, typename TTraj>
-  AmplitudeCarrier(const TGrid& grid, const TTraj& trajectory) : m_interpolant(grid, trajectory) {}
-};
+  std::vector<double> es(Ne);
+  for (Linx::Index i = 0; i < Ne; i++) {
+    es[i] = i;
+  }
+
+  return {ys, es};
+}
+
+Linx::Raster<std::complex<double>> loadModeData(const MemoryChallenger::Mode& mode) {
+  Linx::Raster<std::complex<double>> out({Ny, Ne});
+  for (int e = 0; e < Ne; ++e) {
+    for (int y = 0; y < Ny; ++y) {
+      out[{y, e}] = {y + e, 0};
+    }
+  }
+  return out;
+}
 
 } // namespace SplineChallenger
 
