@@ -56,6 +56,29 @@ std::vector<std::complex<double>> runMemoryChallenger(const std::vector<MemoryCh
   return carrier.interpolate(ellipses, modes).container();
 }
 
+std::vector<std::complex<double>> runSplineChallenger(const std::vector<MemoryChallenger::Ellipse>& ellipses) {
+
+  static constexpr int lmax = 10;
+  static constexpr int nmax = 30;
+  std::vector<Linx::Vector<double, 2>> x(ellipses.size());
+  for (std::size_t i = 0; i < ellipses.size(); ++i) {
+    x[i] = {ellipses[i].y(), ellipses[i].e()};
+  }
+  SplineChallenger::SeparableSpline<2> interpolant(SplineChallenger::loadGrid(), x);
+
+  std::vector<std::complex<double>> out;
+  for (Linx::Index l = 2; l <= lmax; ++l) {
+    for (Linx::Index m = 0; m <= l; ++m) {
+      for (Linx::Index n = -nmax; n <= nmax; ++n) {
+        const auto modal = interpolant(SplineChallenger::loadModeData({l, m, n}));
+        out.insert(out.end(), modal.begin(), modal.end());
+      }
+    }
+  }
+
+  return out;
+}
+
 class Challenge : public Elements::Program {
 
 public:
@@ -91,6 +114,9 @@ public:
         break;
       case 'm':
         out = runMemoryChallenger(ellipses);
+        break;
+      case 's':
+        out = runSplineChallenger(ellipses);
         break;
       default:
         logger.error("Unknown test case.");

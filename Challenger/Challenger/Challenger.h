@@ -6,5 +6,6 @@
 
 #include "Few/Amplitude.h"
 #include "MemoryChallenger/Amplitude.h"
+#include "SplineChallenger/Amplitude.h"
 
 #endif
