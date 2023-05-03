@@ -18,10 +18,9 @@ BOOST_AUTO_TEST_CASE(singleton_test) {
   Few::AmplitudeCarrier carrier(lmax, nmax, "");
   std::cout << "  done." << std::endl;
 
-  // FIXME many values
   std::cout << "Interpolating..." << std::endl;
-  std::vector<double> ps {4.5};
-  std::vector<double> es {14.5};
+  std::vector<double> ps {10.};
+  std::vector<double> es {0.};
   std::vector<int> ls {5};
   std::vector<int> ms {5};
   std::vector<int> ns {5};
@@ -45,10 +44,9 @@ BOOST_AUTO_TEST_CASE(full_lmn_test) {
   Few::AmplitudeCarrier carrier(lmax, nmax, "");
   std::cout << "  done." << std::endl;
 
-  // FIXME many values
   std::cout << "Interpolating..." << std::endl;
-  std::vector<double> ps {4.5};
-  std::vector<double> es {14.5};
+  std::vector<double> ps {10.};
+  std::vector<double> es {0.};
   std::vector<int> ls;
   std::vector<int> ms;
   std::vector<int> ns;
