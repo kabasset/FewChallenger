@@ -254,12 +254,14 @@ class SeparableSpline {
 
 public:
   SeparableSpline(const Linx::Vector<std::vector<double>, N>& u, const std::vector<Linx::Vector<double, N>>& x) :
-      m_splines(u.size()) {
+      m_splines(u.size()), m_positions(x.size()) {
+    // FIXME sort
     std::vector<double> xi(x.size());
     for (std::size_t i = 0; i < m_splines.size(); ++i) {
       for (std::size_t j = 0; j < x.size(); ++j) {
         xi[j] = x[j][i];
       }
+      m_positions[i] = Linx::Position<N>::one(); // FIXME get position in grid from sorting
       m_splines[i] = OrientedSpline(u[i], xi);
     }
   }
@@ -268,8 +270,13 @@ public:
    * @brief Interpolate.
    */
   template <typename TMap>
-  Linx::Raster<typename TMap::Value, TMap::Dimension> operator()(const TMap& v) const {
-    return interpolateUpTo<N - 1>(v);
+  std::vector<typename TMap::Value> operator()(const TMap& v) const {
+    const auto raster = interpolateUpTo<N - 1>(v); // FIXME compute only required values
+    std::vector<typename TMap::Value> out(m_positions.size());
+    for (std::size_t i = 0; i < m_positions.size(); ++i) {
+      out[i] = raster[m_positions[i]];
+    }
+    return out;
   }
 
 private:
@@ -306,6 +313,7 @@ private:
   }
 
   std::vector<OrientedSpline> m_splines;
+  std::vector<Linx::Position<N>> m_positions;
 };
 
 } // namespace SplineChallenger

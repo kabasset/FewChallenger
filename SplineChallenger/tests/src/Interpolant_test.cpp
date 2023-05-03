@@ -49,14 +49,14 @@ BOOST_AUTO_TEST_CASE(separable_real_test) {
   BOOST_TEST(y.size() == x.size());
   for (std::size_t i = 0; i < x.size(); ++i) {
     Linx::Position<2> p;
-    for (std::size_t j = 0; j < u0.size(); ++j) {
+    for (std::size_t j = 1; j < u0.size(); ++j) {
       if (u0[j] < x[i][0]) {
-        p[0] = j - 1;
+        p[0] = j;
       }
     }
-    for (std::size_t j = 0; j < u1.size(); ++j) {
+    for (std::size_t j = 1; j < u1.size(); ++j) {
       if (u1[j] < x[i][1]) {
-        p[1] = j - 1;
+        p[1] = j;
       }
     }
     BOOST_TEST(y[i] > v[p]);
