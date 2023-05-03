@@ -5,6 +5,7 @@
 #define _SPLINECHALLENGER_INTERPOLANT_H
 
 #include "LinxCore/Raster.h"
+#include "LinxCore/Tiling.h"
 
 #include <complex>
 
@@ -155,6 +156,23 @@ public:
   }
 
   /**
+   * @brief Interpolate from iterable `v` directly into iterable `y`.
+   */
+  template <typename TIn, typename TOut>
+  void transform(const TIn& v, TOut& y) const {
+    using T = std::decay_t<decltype(*y.begin())>;
+    const std::vector<T> in(v.begin(), v.end());
+    const auto out = (*this)(in.data()); // FIXME work with iterators
+    std::copy(out.begin(), out.end(), y.begin());
+    for (std::size_t i = 0; i < in.size(); ++i) {
+    }
+    for (std::size_t i = 0; i < out.size(); ++i) {
+    }
+    for (const auto& e : y) {
+    }
+  }
+
+  /**
    * @brief Interpolate and integrate.
    * @param v The values at knots
    * @param z The second derivatives at knots
@@ -247,11 +265,6 @@ public:
    */
   template <typename TMap>
   Linx::Raster<typename TMap::Value, TMap::Dimension> operator()(const TMap& v) const {
-    Linx::Position<TMap::Dimension> shape(m_splines.size());
-    for (std::size_t i = 0; i < shape.size(); ++i) {
-      shape[i] = m_splines[i].samplePositions().size();
-    }
-    Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
     return interpolateUpTo<N - 1>(v);
   }
 
@@ -261,15 +274,15 @@ private:
     if constexpr (I <= 0) {
       return interpolateAlong0(v);
     } else {
-      using T = typename TMap::Value;
       auto shape = v.shape();
       shape[I] = m_splines[I].samplePositions().size();
-      Linx::Raster<T, TMap::Dimension> y(shape);
-      // for (const auto& p : Linx::project<I>(y.domain())) {
-      //   std::vector<T> values;
-      //   const auto line = m_splines[0](values);
-      //   std::copy(line.begin(), line.end(), &y[p]);
-      // }
+      Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
+      auto yLines = Linx::profiles<I>(y);
+      auto yLineIt = yLines.begin();
+      for (const auto& vLine : Linx::profiles<I>(v)) {
+        m_splines[I].transform(vLine, *yLineIt);
+        ++yLineIt;
+      }
       return interpolateUpTo<I - 1>(y);
     }
   }
@@ -279,9 +292,11 @@ private:
     auto shape = v.shape();
     shape[0] = m_splines[0].samplePositions().size();
     Linx::Raster<typename TMap::Value, TMap::Dimension> y(shape);
-    for (const auto& p : Linx::project(y.domain())) {
-      const auto line = m_splines[0](&v[p]);
-      std::copy(line.begin(), line.end(), &y[p]);
+    auto yLines = Linx::rows(y);
+    auto yLineIt = yLines.begin();
+    for (const auto& vLine : Linx::rows(v)) {
+      m_splines[0].transform(vLine, *yLineIt);
+      ++yLineIt;
     }
     return y;
   }
