@@ -14,24 +14,39 @@ namespace MemoryChallenger {
 static constexpr Linx::Index Ny = 50;
 static constexpr Linx::Index Ne = 33;
 
-struct Pe {
-  const double p;
-  const double e;
-  const double y;
+class Ellipse {
 
-  explicit Pe(double p_ = 0, double e_ = 0) : p {p_}, e {e_}, y {std::log(p - 2. * e - 2.1)} {}
+public:
+  Ellipse(double p = 0, double e = 0) : m_p {p}, m_e {e}, m_y {std::log(p - 2. * e - 2.1)} {}
+
+  double p() const {
+    return m_p;
+  }
+
+  double e() const {
+    return m_e;
+  }
+
+  double y() const {
+    return m_y;
+  }
+
+  friend bool operator==(const Ellipse& lhs, const Ellipse& rhs) {
+    return lhs.m_p == rhs.m_p && lhs.m_e == rhs.m_e;
+  }
+
+private:
+  double m_p;
+  double m_e;
+  double m_y;
 };
-
-bool operator==(const Pe& lhs, const Pe& rhs) {
-  return lhs.p == rhs.p && lhs.e == rhs.e;
-}
 
 /**
  * l: 2..l_max
  * m: 0..l
  * n: -n_max..n_max
  */
-using Lmn = Linx::Position<3>;
+using Mode = Linx::Position<3>;
 
 template <typename TSeq, typename TMap>
 ComplexInterpolant2D createInterpolant(const Linx::Position<3>& lmn, const TSeq& ys, const TSeq& es, TMap&& z) {
@@ -39,12 +54,13 @@ ComplexInterpolant2D createInterpolant(const Linx::Position<3>& lmn, const TSeq&
   (void)lmn; // Silent unused warning (would be used to load from file)
 
   Linx::Raster<double, 3> zipped({2, Ny, Ne});
-  for (Linx::Index i = 0; i < Ny * Ne; ++i) { // Not range() for faire comparison with FEW
-    zipped[2 * i] = i;
-    zipped[2 * i + 1] = -i;
+  for (int e = 0; e < Ne; ++e) {
+    for (int y = 0; y < Ny; ++y) {
+      zipped[{0, y, e}] = y + e;
+      zipped[{1, y, e}] = 0;
+    }
   }
 
-  // FIXME can we avoid this, by refactoring the interpolants?
   for (int e = 0; e < Ne; ++e) {
     for (int y = 0; y < Ny; ++y) {
       std::forward<TMap>(z)[{y, e, 0}] = zipped[{0, Ny - 1 - y, e}];
@@ -59,12 +75,14 @@ template <typename TMap, typename TInterpolants>
 void fillInterpolantRaster(Linx::Index lmax, Linx::Index nmax, TMap& z, TInterpolants& interpolants) {
 
   Linx::Raster<double, 1> ys({Ny});
-  for (Linx::Index i = 0; i < Ny; i++) { // Not range() for faire comparison with FEW
-    ys[i] = i;
+  for (Linx::Index i = 0; i < Ny; i++) {
+    const double p = 10 * (i + 1);
+    const double e = 0;
+    ys[i] = std::log(p - 2. * e - 2.1);
   }
 
   Linx::Raster<double, 1> es({Ne});
-  for (Linx::Index i = 0; i < Ne; i++) { // Not range() for faire comparison with FEW
+  for (Linx::Index i = 0; i < Ne; i++) {
     es[i] = i;
   }
 
@@ -100,7 +118,7 @@ public:
   Linx::Index m_lmax;
   Linx::Index m_nmax;
   Linx::AlignedRaster<double, 4> m_z;
-  Linx::AlignedRaster<ComplexInterpolant2D, 3> m_interpolants; // FIXME Single ComplexSpline2D?
+  Linx::AlignedRaster<ComplexInterpolant2D, 3> m_interpolants;
 
   AmplitudeCarrier(Linx::Index lmax, Linx::Index nmax) :
       m_lmax(lmax), m_nmax(nmax), m_z({Ny, Ne, 2, modeCount(m_lmax, m_nmax)}, nullptr, 0),
@@ -108,13 +126,13 @@ public:
     fillInterpolantRaster(m_lmax, m_nmax, m_z, m_interpolants);
   }
 
-  template <typename Tpe, typename Tlmn>
-  Linx::Raster<std::complex<double>> interpolate(const Tpe& pes, const Tlmn& lmns) {
-    Linx::Raster<std::complex<double>> amplitude({lmns.size(), pes.size()});
+  template <typename TE, typename TM>
+  Linx::Raster<std::complex<double>> interpolate(const TE& ellipses, const TM& modes) {
+    Linx::Raster<std::complex<double>> amplitude({modes.size(), ellipses.size()});
     auto it = amplitude.begin();
-    for (const auto& pe : pes) {
-      for (const auto& lmn : lmns) {
-        *it = m_interpolants[{lmn[2] + m_nmax, lmn[1], lmn[0] - 2}](pe.y, pe.e);
+    for (const auto& py : ellipses) {
+      for (const auto& lmn : modes) {
+        *it = m_interpolants[{lmn[2] + m_nmax, lmn[1], lmn[0] - 2}](py.y(), py.e());
         ++it;
       }
     }

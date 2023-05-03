@@ -24,11 +24,11 @@ public:
   AmplitudeCarrier(int lmax_, int nmax_, std::string few_dir);
   void Interp2DAmplitude(
       std::complex<double>* amplitude_out,
-      double* p_arr,
-      double* e_arr,
-      int* l_arr,
-      int* m_arr,
-      int* n_arr,
+      const double* p_arr,
+      const double* e_arr,
+      const int* l_arr,
+      const int* m_arr,
+      const int* n_arr,
       int num,
       int num_modes);
 

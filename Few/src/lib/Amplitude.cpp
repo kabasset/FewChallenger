@@ -38,9 +38,12 @@ void create_amplitude_interpolant(
 
   /* read dataset */
   // H5LTread_dataset_double(file_id, dataset_name, modeData); // FIXME
-  for (int i = 0; i < Ne * Ny; ++i) {
-    modeData[2 * i] = i;
-    modeData[2 * i + 1] = -i;
+  int i = 0;
+  for (int e = 0; e < Ne; ++e) {
+    for (int y = 0; y < Ny; ++y, ++i) {
+      modeData[2 * i] = y + e;
+      modeData[2 * i + 1] = 0;
+    }
   }
 
   Vector modeData_re(Ne * Ny);
@@ -86,8 +89,9 @@ void load_and_interpolate_amplitude_data(int lmax, int nmax, struct waveform_amp
   for (int i = 0; i < Ny; i++) {
     // double p = gridRaw[1 + 4 * i];
     // double e = 0;
-
-    ys[i] = i; // FIXME ys[Ny - 1 - i] = std::log(0.1 * (10. * p - 20 * e - 21.));
+    const double p = 10 * (i + 1);
+    const double e = 0;
+    ys[i] = std::log(p - 2. * e - 2.1); // FIXME ys[Ny - 1 - i] = std::log(0.1 * (10. * p - 20 * e - 21.));
   }
 
   for (int i = 0; i < Ne; i++) {
@@ -157,11 +161,11 @@ void AmplitudeCarrier::dealloc() {
 // main function for computing amplitudes
 void AmplitudeCarrier::Interp2DAmplitude(
     std::complex<double>* amplitude_out,
-    double* p_arr,
-    double* e_arr,
-    int* l_arr,
-    int* m_arr,
-    int* n_arr,
+    const double* p_arr,
+    const double* e_arr,
+    const int* l_arr,
+    const int* m_arr,
+    const int* n_arr,
     int num,
     int num_modes) {
 

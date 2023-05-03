@@ -11,14 +11,12 @@
 
 using Duration = std::chrono::milliseconds;
 
-std::complex<double> runFew(int size) {
+std::vector<std::complex<double>> runFew(const std::vector<double>& ps, const std::vector<double>& es) {
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
   Few::AmplitudeCarrier carrier(lmax, nmax, "");
 
-  std::vector<double> ps(size, 4.5);
-  std::vector<double> es(size, 14.5);
   std::vector<int> ls;
   std::vector<int> ms;
   std::vector<int> ns;
@@ -37,28 +35,25 @@ std::complex<double> runFew(int size) {
 
   carrier.Interp2DAmplitude(out.data(), ps.data(), es.data(), ls.data(), ms.data(), ns.data(), n, nmodes);
 
-  return std::accumulate(out.begin(), out.end(), std::complex<double> {});
+  return out;
 }
 
-std::complex<double> runMemoryChallenger(int size) {
+std::vector<std::complex<double>> runMemoryChallenger(const std::vector<MemoryChallenger::Ellipse>& ellipses) {
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
   MemoryChallenger::AmplitudeCarrier carrier(lmax, nmax);
 
-  std::vector<MemoryChallenger::Pe> pes(size, MemoryChallenger::Pe {4.5, 14.5});
-  std::vector<MemoryChallenger::Lmn> lmns;
+  std::vector<MemoryChallenger::Mode> modes;
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
-        lmns.push_back({l, m, n});
+        modes.push_back({l, m, n});
       }
     }
   }
 
-  const auto out = carrier.interpolate(pes, lmns);
-
-  return std::accumulate(out.begin(), out.end(), std::complex<double> {});
+  return carrier.interpolate(ellipses, modes).container();
 }
 
 class Challenge : public Elements::Program {
@@ -76,15 +71,26 @@ public:
     Logging logger = Logging::getLogger("Challenge");
     const int size = args["size"].as<int>();
 
+    std::vector<double> ps(size);
+    std::vector<double> es(size);
+    std::vector<MemoryChallenger::Ellipse> ellipses(size);
+    for (std::size_t i = 0; i < size; ++i) {
+      ps[i] = 490. / size * (i + 1) + 10;
+      es[i] = 32. / size * i;
+      ellipses[i] = {ps[i], es[i]};
+      logger.debug() << ps[i] << ", " << es[i] << ", " << ellipses[i].y();
+    }
+
     logger.info() << "Running benchmark...";
     Linx::Chronometer<Duration> chrono;
+    std::vector<std::complex<double>> out;
     chrono.start();
     switch (args["case"].as<char>()) {
       case 'f':
-        runFew(size);
+        out = runFew(ps, es);
         break;
       case 'm':
-        runMemoryChallenger(size);
+        out = runMemoryChallenger(ellipses);
         break;
       default:
         logger.error("Unknown test case.");
@@ -92,6 +98,7 @@ public:
     }
     const auto duration = chrono.stop();
 
+    logger.info() << "  " << out[0] << " ... " << out[out.size() - 1];
     logger.info() << "  Done in " << duration.count() << "ms";
 
     return ExitCode::OK;
