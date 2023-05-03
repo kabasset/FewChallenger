@@ -47,9 +47,20 @@ BOOST_AUTO_TEST_CASE(separable_real_test) {
   const Linx::Raster<double> v({u0.size(), u1.size()}, {1, 2, 3, 4, 10, 20, 30, 40, 100, 200, 300, 400});
   const auto y = spline(v);
   BOOST_TEST(y.size() == x.size());
-  for (const auto& p : y.domain()) {
-    BOOST_TEST(y[p] > v[p]);
-    BOOST_TEST(y[p] < v[p + 1]);
+  for (std::size_t i = 0; i < x.size(); ++i) {
+    Linx::Position<2> p;
+    for (std::size_t j = 0; j < u0.size(); ++j) {
+      if (u0[j] < x[i][0]) {
+        p[0] = j - 1;
+      }
+    }
+    for (std::size_t j = 0; j < u1.size(); ++j) {
+      if (u1[j] < x[i][1]) {
+        p[1] = j - 1;
+      }
+    }
+    BOOST_TEST(y[i] > v[p]);
+    BOOST_TEST(y[i] < v[p + 1]);
   }
 }
 
