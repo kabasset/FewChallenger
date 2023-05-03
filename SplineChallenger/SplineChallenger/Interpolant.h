@@ -253,10 +253,14 @@ template <Linx::Index N = 2>
 class SeparableSpline {
 
 public:
-  SeparableSpline(const Linx::Vector<std::vector<double>, N>& u, const Linx::Vector<std::vector<double>, N>& x) :
+  SeparableSpline(const Linx::Vector<std::vector<double>, N>& u, const std::vector<Linx::Vector<double, N>>& x) :
       m_splines(u.size()) {
+    std::vector<double> xi(x.size());
     for (std::size_t i = 0; i < m_splines.size(); ++i) {
-      m_splines[i] = OrientedSpline(u[i], x[i]);
+      for (std::size_t j = 0; j < x.size(); ++j) {
+        xi[j] = x[j][i];
+      }
+      m_splines[i] = OrientedSpline(u[i], xi);
     }
   }
 

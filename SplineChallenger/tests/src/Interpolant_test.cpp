@@ -42,12 +42,11 @@ BOOST_AUTO_TEST_CASE(oriented_complex_test) {
 BOOST_AUTO_TEST_CASE(separable_real_test) {
   const std::vector<double> u0 {1, 2, 3, 4};
   const std::vector<double> u1 {1, 10, 100};
-  const std::vector<double> x0 {1.1, 2.5, 3.9};
-  const std::vector<double> x1 {2., 50.};
-  SplineChallenger::SeparableSpline<2> spline({u0, u1}, {x0, x1});
+  const std::vector<Linx::Vector<double, 2>> x {{1.1, 2.}, {2.5, 20.}, {3.9, 50.}};
+  SplineChallenger::SeparableSpline<2> spline({u0, u1}, x);
   const Linx::Raster<double> v({u0.size(), u1.size()}, {1, 2, 3, 4, 10, 20, 30, 40, 100, 200, 300, 400});
   const auto y = spline(v);
-  BOOST_TEST(y.size() == x0.size() * x1.size());
+  BOOST_TEST(y.size() == x.size());
   for (const auto& p : y.domain()) {
     BOOST_TEST(y[p] > v[p]);
     BOOST_TEST(y[p] < v[p + 1]);
