@@ -12,10 +12,10 @@ elements_add_library(MemoryChallenger src/lib/*.cpp
                      PUBLIC_HEADERS MemoryChallenger)
 
 elements_add_unit_test(Amplitude tests/src/Amplitude_test.cpp 
-                     EXECUTABLE Challenger_Amplitude_test
+                     EXECUTABLE MemoryChallenger_Amplitude_test
                      LINK_LIBRARIES MemoryChallenger
                      TYPE Boost)
 elements_add_unit_test(Interpolant tests/src/Interpolant_test.cpp 
-                     EXECUTABLE Challenger_Interpolant_test
+                     EXECUTABLE MemoryChallenger_Interpolant_test
                      LINK_LIBRARIES MemoryChallenger
                      TYPE Boost)
