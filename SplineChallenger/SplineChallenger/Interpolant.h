@@ -261,8 +261,8 @@ public:
       for (std::size_t j = 0; j < x.size(); ++j) {
         xi[j] = x[j][i];
       }
-      m_positions[i] = Linx::Position<N>::one(); // FIXME get position in grid from sorting
       m_splines[i] = OrientedSpline(u[i], xi);
+      m_positions[i] = Linx::Position<N>::one() * i; // FIXME get position in grid from sorting
     }
   }
 
