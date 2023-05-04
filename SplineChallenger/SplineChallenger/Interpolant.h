@@ -164,12 +164,6 @@ public:
     const std::vector<T> in(v.begin(), v.end());
     const auto out = (*this)(in.data()); // FIXME work with iterators
     std::copy(out.begin(), out.end(), y.begin());
-    for (std::size_t i = 0; i < in.size(); ++i) {
-    }
-    for (std::size_t i = 0; i < out.size(); ++i) {
-    }
-    for (const auto& e : y) {
-    }
   }
 
   /**
@@ -253,6 +247,8 @@ template <Linx::Index N = 2>
 class SeparableSpline {
 
 public:
+  SeparableSpline() : m_splines(), m_positions() {}
+
   SeparableSpline(const Linx::Vector<std::vector<double>, N>& u, const std::vector<Linx::Vector<double, N>>& x) :
       m_splines(u.size()), m_positions(x.size()) {
     // FIXME sort
