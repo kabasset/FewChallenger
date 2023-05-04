@@ -12,6 +12,11 @@ elements_add_library(SplineChallenger src/lib/*.cpp
                      PUBLIC_HEADERS SplineChallenger)
 
 elements_add_unit_test(Interpolant tests/src/Interpolant_test.cpp 
-                     EXECUTABLE SplineChallenger_Interpolant_test
-                     LINK_LIBRARIES SplineChallenger
-                     TYPE Boost)
+                    EXECUTABLE SplineChallenger_Interpolant_test
+                    LINK_LIBRARIES SplineChallenger
+                    TYPE Boost)
+
+elements_add_unit_test(Spline tests/src/Spline_test.cpp 
+                    EXECUTABLE SplineChallenger_Spline_test
+                    LINK_LIBRARIES SplineChallenger
+                    TYPE Boost)
