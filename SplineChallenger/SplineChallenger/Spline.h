@@ -36,11 +36,11 @@
  * For example, for resampling several functions using spline interpolation, one can simply do:
  * 
  * \code
- * SplineIntervals u = ... // Computes domain-related coefficients
- * SplineArguments x = ... // Computes arguments-related coefficients
- * std::vector<std::vector<double>> vs = ...
- * for (const auto& v : vs) {
- *   auto y = Spline(u, v)(x);
+ * SplineIntervals u = ... // Compute domain-related coefficients
+ * SplineArguments x = ... // Compute arguments-related coefficients
+ * std::vector<std::vector<double>> v = ...
+ * for (const auto& vi : v) {
+ *   auto y = Spline(u, vi)(x); // Compute only what is left
  *   ...
  * }
  * \endcode
@@ -106,9 +106,9 @@ public:
     if (x > m_u[m_u.size() - 1]) {
       throw std::runtime_error("x is too large!");
     }
-    std::size_t i = 0;
-    while (x >= m_u[i]) {
-      ++i;
+    auto i = m_u.size() - 2;
+    while (x < m_u[i]) {
+      --i;
     }
     return i;
   }
