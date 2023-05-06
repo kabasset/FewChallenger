@@ -1,8 +1,8 @@
 /// @copyright 2023, Antoine Basset
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#ifndef _SPLINECHALLENGER_SPLINE_H
-#define _SPLINECHALLENGER_SPLINE_H
+#ifndef _FOCS_SPLINE_H
+#define _FOCS_SPLINE_H
 
 #include "LinxCore/Raster.h"
 #include "LinxCore/Tiling.h"
@@ -44,6 +44,8 @@
  *   ...
  * }
  * \endcode
+ * 
+ * Moreover, Focs is compatible with any value type of a ring (i.e. with `+` and `*` operators), e.g. `std::complex`.
  */
 namespace Focs {
 
