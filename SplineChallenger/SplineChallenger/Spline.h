@@ -67,8 +67,9 @@ public:
     if (size < 2) {
       throw std::runtime_error("Not enough knots (<3).");
     }
+    double h;
     for (std::size_t i = 0; i < size; ++i) {
-      const auto h = m_u[i + 1] - m_u[i];
+      h = m_u[i + 1] - m_u[i];
       if (h <= 0) {
         throw std::runtime_error("Interval bounds are not strictly increasing.");
       }
@@ -137,7 +138,7 @@ public:
   template <typename TIt>
   SplineArguments(const SplineIntervals& domain, TIt begin, TIt end) :
       m_domain(domain), m_x(std::move(begin), std::move(end)), m_coefficients(m_x.size()) {
-    assign(m_x.begin(), m_x.end()); // FIXME don't reassign m_x
+    compute();
   }
 
   /**
@@ -160,6 +161,14 @@ public:
   void assign(TIt begin, TIt end) {
     m_x.assign(std::move(begin), std::move(end));
     m_coefficients.resize(m_x.size());
+    compute();
+  }
+
+private:
+  /**
+   * @brief Update coefficients given m_x.
+   */
+  void compute() {
     std::size_t index;
     double x, h, left, right;
     for (std::size_t i = 0; i < m_x.size(); ++i) {
@@ -178,7 +187,6 @@ public:
     }
   }
 
-private:
   /**
    * @brief Spline coefficients related to x.
    */
@@ -215,7 +223,7 @@ public:
   */
   template <typename TKnots>
   Spline(const SplineIntervals& u, const TKnots& v) : m_domain(u), m_v(v.begin(), v.end()), m_s(m_v.size()) {
-    assign(v); // FIXME don't reassign m_v
+    compute();
   }
 
   /**
@@ -224,20 +232,8 @@ public:
   template <typename TKnots>
   void assign(const TKnots& v) {
     m_v.assign(v.begin(), v.end());
-    const auto size = m_v.size();
-    // FIXME check size == doman.m_u.size()
-    std::vector<T> d(size); // First derivatives
-    d[0] = (m_v[1] - m_v[0]) / m_domain.m_h[0]; // Because next loop starts at 1
-    auto* dIt = d.data() + 1;
-    const auto* vIt = m_v.data() + 1;
-    const auto* hIt = m_domain.m_h.data() + 1;
-    for (auto sIt = &m_s[0] + 1; sIt != &m_s[size - 1]; ++sIt, ++vIt, ++hIt, ++dIt) {
-      // d[i] = (m_v[i + 1] - m_v[i]) / m_h[i];
-      *dIt = (*(vIt + 1) - *vIt) / *hIt;
-      // z[i] = (m_v[i + 1] - m_v[i]) / m_h[i] - (m_v[i] - m_v[i - 1]) / m_h[i - 1];
-      *sIt = *dIt - *(dIt - 1);
-    }
-    // z[0] and z[size-1] are left at 0 for natural splines
+    // FIXME check size
+    compute();
   }
 
   /**
@@ -268,6 +264,26 @@ public:
   }
 
 private:
+  /**
+   * @brief Update coefficients given m_v.
+   */
+  void compute() {
+    const auto size = m_v.size();
+    // FIXME check size == doman.m_u.size()
+    T d0 = (m_v[1] - m_v[0]) / m_domain.m_h[0]; // Because next loop starts at 1
+    T d1;
+    const auto* vIt = m_v.data() + 1;
+    const auto* hIt = m_domain.m_h.data() + 1;
+    for (auto sIt = &m_s[0] + 1; sIt != &m_s[size - 1]; ++sIt, ++vIt, ++hIt) {
+      // d[i] = (m_v[i + 1] - m_v[i]) / m_h[i];
+      d1 = (*(vIt + 1) - *vIt) / *hIt;
+      // m_s[i] = (m_v[i + 1] - m_v[i]) / m_h[i] - (m_v[i] - m_v[i - 1]) / m_h[i - 1];
+      *sIt = d1 - d0;
+      d0 = d1;
+    }
+    // m_s[0] and m_s[size - 1] are left at 0 for natural splines
+  }
+
   const SplineIntervals& m_domain; ///< The knots domain
   std::vector<T> m_v; ///< The knot values
   std::vector<T> m_s; ///< The knot second derivatives
