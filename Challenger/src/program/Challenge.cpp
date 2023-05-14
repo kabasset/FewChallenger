@@ -64,13 +64,16 @@ std::vector<std::complex<double>> runSplineChallenger(const std::vector<MemoryCh
   for (std::size_t i = 0; i < ellipses.size(); ++i) {
     x[i] = {ellipses[i].y(), ellipses[i].e()};
   }
-  SplineChallenger::SeparableSpline<2> interpolant(SplineChallenger::loadGrid(), x);
+  const auto u = SplineChallenger::loadGrid();
+  const Splider::SplineIntervals u0(u[0]);
+  const Splider::SplineIntervals u1(u[1]);
+  Splider::BiSplineResampler<std::complex<double>> resample(u0, u1, x);
 
   std::vector<std::complex<double>> out;
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
-        const auto modal = interpolant(SplineChallenger::loadModeData({l, m, n}));
+        const auto modal = resample(SplineChallenger::loadModeData({l, m, n}));
         out.insert(out.end(), modal.begin(), modal.end());
       }
     }
@@ -84,7 +87,7 @@ class Challenge : public Elements::Program {
 public:
   std::pair<OptionsDescription, PositionalOptionsDescription> defineProgramArguments() override {
     Linx::ProgramOptions options;
-    options.named("case", "Test case: f (Few), c (Challenger)", 'f');
+    options.named("case", "Test case: f (Few), m (MemoryChallenger), s (SplineChallenger)", 'f');
     options.named("size", "Number of trajectory points", 1);
     return options.asPair();
   }

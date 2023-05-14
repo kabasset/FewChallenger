@@ -9,4 +9,4 @@ set(CMAKE_C_FLAGS_RELEASE "-O3"
     CACHE STRING "Enable -o3 for release builds."
     FORCE)
 
-elements_project(FewChallenger 1.0 USE Linx 1.0)
+elements_project(FewChallenger 1.0 USE Linx 1.0 Splider 1.0)

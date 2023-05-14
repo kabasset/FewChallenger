@@ -6,7 +6,7 @@
 
 #include "LinxCore/Raster.h"
 #include "MemoryChallenger/Amplitude.h" // Ellipse, Mode
-#include "SplineChallenger/Interpolant.h"
+#include "Splider/BiSpline.h"
 
 #include <array>
 
