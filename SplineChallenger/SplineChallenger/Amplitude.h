@@ -33,10 +33,17 @@ Linx::Vector<std::vector<double>, 2> loadGrid() {
 }
 
 Linx::Raster<std::complex<double>> loadModeData(const MemoryChallenger::Mode& mode) {
-  Linx::Raster<std::complex<double>> out({Ny, Ne});
+  Linx::Raster<std::complex<double>> raw({Ny, Ne});
   for (int e = 0; e < Ne; ++e) {
     for (int y = 0; y < Ny; ++y) {
-      out[{y, e}] = {y + e, 0};
+      raw[{y, e}] = {y + e, 0};
+    }
+  }
+  // FIXME return raw.flip<0>()
+  Linx::Raster<std::complex<double>> out(raw.shape());
+  for (int e = 0; e < Ne; ++e) {
+    for (int y = 0; y < Ny; ++y) {
+      out[{y, e}] = raw[{Ny - 1 - y, e}];
     }
   }
   return out;
