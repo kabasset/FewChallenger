@@ -67,7 +67,7 @@ std::vector<std::complex<double>> runSplineChallenger(const std::vector<MemoryCh
   const auto u = SplineChallenger::loadGrid();
   const Splider::SplineIntervals u0(u[0]);
   const Splider::SplineIntervals u1(u[1]);
-  Splider::BiSplineResampler<std::complex<double>> resample(u0, u1, x);
+  Splider::BiSplineResampler<std::complex<double>, Splider::SplineCache::Lazy> resample(u0, u1, x);
 
   std::vector<std::complex<double>> out;
   for (Linx::Index l = 2; l <= lmax; ++l) {
