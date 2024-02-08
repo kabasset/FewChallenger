@@ -8,8 +8,8 @@ The overall memory layout is challenged in [MemoryChallenger](MemoryChallenger/M
 and the spline interpolation implementation in [SplineChallenger](SplineChallenger/SplineChallenger).
 
 A benchmark is implemented as executable [Challenge](Challenger/src/program/Challenge.cpp).
-Preliminary results show a ~20% speed-up with memory optimization only (~5s vs. ~4s for 1000 trajectory points),
-and a factor ~6 improvement with a complete reorganization of the computation (~0.8s).
+Preliminary results show a ~10% speed-up with memory optimization only (~4.5s vs. ~4.0s for 1000 trajectory points),
+and a *factor ~40 improvement* with a complete rewriting of the computation (~0.11s).
 
 # FEW
 
@@ -29,9 +29,8 @@ For each mode, the interpolant is called on the same positions, i.e. there is a 
 
 The default benchmark uses the following sizing parameters:
 
-* `lmax` = 10;
-* `nmax` = 30;
-* There are 33 x 50 knots;
+* `lmax` = 10, `nmax` = 30, which yields 3843 modes;
+* There are 33 x 50 = 1650 knots;
 * There are 1000 interpolation coordinates.
 
 # MemoryChallenger
@@ -52,7 +51,7 @@ Given that most of the spline coefficients are real anyway, this should almost d
 
 Additionally, given that the grid of positions to interpolate on does *not* depend on the mode, many spline coefficients can be computed intependently of `(l, m, n)`.
 Let us name `U, V_lmn` the knot positions and values, and `X, Y_lmn` the interpolated positions and values.
-Instead of computing one interpolant for each `(l, m, n)` and applying it to the `X`'s, we propose to compute a single interpolant -- or, rather, *resampler* -- for the `U`'s and `X`'s.
+Instead of computing one interpolant for each `(l, m, n)` and applying it to `X`, we propose to compute a single parametric interpolant from `U` and `X` and apply it to the `V_lmn`'s.
 A lot of spline coefficients can be computed already.
 Moreover, given that `X` is known early, only the knots which neighbor `X` values have to be computed, which is not possible with classical spline interpolation.
 Finally, only the coefficients which depend on `V_lmn` around `X` must be computed to get `Y_lmn` for each mode.
@@ -60,4 +59,5 @@ Iteratively loading `V_lmn` and computing `Y_lmn` for each mode allows instancia
 
 Unfortunately, we did not find a suitable library and therefore had to implement one: [Splider](https://github.com/kabasset/Splider).
 
-With respect to the original code, the use of Splider instead of GSL divides computation time by around 6.
+With respect to the original code, the use of Splider instead of GSL divides computation time by around 40.
+Many optimization are still to be implemented in Splider.
