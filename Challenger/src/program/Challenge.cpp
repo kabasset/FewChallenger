@@ -11,15 +11,24 @@
 
 using Duration = std::chrono::milliseconds;
 
+std::size_t out_size(int lmax, int nmax, std::size_t sample_count) {
+  return 3843 * sample_count; // FIXME compute from lmax and nmax
+}
+
 std::vector<std::complex<double>> runFew(const std::vector<double>& ps, const std::vector<double>& es) {
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
   Few::AmplitudeCarrier carrier(lmax, nmax, "");
 
+  const auto size = out_size(lmax, nmax, ps.size());
   std::vector<int> ls;
+  ls.reserve(size);
   std::vector<int> ms;
+  ms.reserve(size);
   std::vector<int> ns;
+  ns.reserve(size);
+
   for (int l = 2; l <= lmax; ++l) {
     for (int m = 0; m <= l; ++m) {
       for (int n = -nmax; n <= nmax; ++n) {
@@ -29,11 +38,9 @@ std::vector<std::complex<double>> runFew(const std::vector<double>& ps, const st
       }
     }
   }
-  const auto n = ps.size();
-  const auto nmodes = ls.size();
-  std::vector<std::complex<double>> out(n * nmodes);
+  std::vector<std::complex<double>> out(size);
 
-  carrier.Interp2DAmplitude(out.data(), ps.data(), es.data(), ls.data(), ms.data(), ns.data(), n, nmodes);
+  carrier.Interp2DAmplitude(out.data(), ps.data(), es.data(), ls.data(), ms.data(), ns.data(), ps.size(), ls.size());
 
   return out;
 }
@@ -44,7 +51,9 @@ std::vector<std::complex<double>> runMemoryChallenger(const std::vector<MemoryCh
   static constexpr int nmax = 30;
   MemoryChallenger::AmplitudeCarrier carrier(lmax, nmax);
 
+  const auto size = out_size(lmax, nmax, ellipses.size());
   std::vector<MemoryChallenger::Mode> modes;
+  modes.reserve(size);
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
@@ -60,19 +69,25 @@ std::vector<std::complex<double>> runSplineChallenger(const std::vector<MemoryCh
 
   static constexpr int lmax = 10;
   static constexpr int nmax = 30;
+  std::size_t size = out_size(lmax, nmax, ellipses.size());
+
   std::vector<Linx::Vector<double, 2>> x(ellipses.size());
   for (std::size_t i = 0; i < ellipses.size(); ++i) {
     x[i] = {ellipses[i].y(), ellipses[i].e()};
   }
+
   const auto u = SplineChallenger::loadGrid();
   const auto build = SplineChallenger::Spline::Multi::builder(u[0], u[1]);
   auto cospline = build.cospline<std::complex<double>>(x);
 
-  std::vector<std::complex<double>> out;
+  std::vector<std::complex<double>> out; // FIXME out(size) (see below)
+  out.reserve(size);
+  std::vector<std::complex<double>> modal; // FIXME write in out directly (see below)
+  modal.reserve(ellipses.size());
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
-        const auto modal = cospline(SplineChallenger::loadModeData({l, m, n}));
+        modal = cospline(SplineChallenger::loadModeData({l, m, n})); // FIXME cospline.transform(load(), &out[i])
         out.insert(out.end(), modal.begin(), modal.end());
       }
     }
@@ -127,8 +142,9 @@ public:
     }
     const auto duration = chrono.stop();
 
+    logger.info() << "  Number of evaluations: " << out.size();
     logger.info() << "  " << out[0] << " ... " << out[out.size() - 1];
-    logger.info() << "  Done in " << duration.count() << "ms";
+    logger.info() << "  Done in: " << duration.count() << "ms";
     for (const auto& e : out) {
       logger.debug() << "  " << e;
     }

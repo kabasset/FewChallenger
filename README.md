@@ -9,7 +9,7 @@ and the spline interpolation implementation in [SplineChallenger](SplineChalleng
 
 A benchmark is implemented as executable [Challenge](Challenger/src/program/Challenge.cpp).
 Preliminary results show a ~10% speed-up with memory optimization only (~4.5s vs. ~4.0s for 1000 trajectory points),
-and a *factor ~40 improvement* with a complete rewriting of the computation (~0.11s).
+and a *factor ~45 improvement* with a complete rewriting of the computation (~0.10s).
 
 # FEW
 
