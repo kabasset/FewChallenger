@@ -8,8 +8,13 @@ The overall memory layout is challenged in [MemoryChallenger](MemoryChallenger/M
 and the spline interpolation implementation in [SplineChallenger](SplineChallenger/SplineChallenger).
 
 A benchmark is implemented as executable [Challenge](Challenger/src/program/Challenge.cpp).
-Preliminary results show a ~10% speed-up with memory optimization only (~4.5s vs. ~4.0s for 1000 trajectory points),
-and a *factor ~45 improvement* with a complete rewriting of the computation (~0.10s).
+Here are preliminary results with 1000 trajectory points:
+
+| Implementation | Runtime | Speedup |
+| -------------- | ------- | ------- |
+| Original FEW | 4.4s | 1.0 |
+| Memory optimization | 3.9s | 1.1 |
+| Spline caching | 0.09s | **50** |
 
 # FEW
 
@@ -42,8 +47,6 @@ For simplicity, this is done for now in some home-made ndarray ([`Linx::Raster`]
 It has a box domain, such that half the storage is wasted (where `m > l`).
 Still, data is better packed and cache friendlier.
 
-Without changing the actual computation, this refactoring of the memory layout saves around 20% of computation time.
-
 # SplineChallenger
 
 Instead of using a pair of real interpolants for the real and imaginary parts of the amplitude, one can directly create complex interpolants.
@@ -59,5 +62,4 @@ Iteratively loading `V_lmn` and computing `Y_lmn` for each mode allows instancia
 
 Unfortunately, we did not find a suitable library and therefore had to implement one: [Splider](https://github.com/kabasset/Splider).
 
-With respect to the original code, the use of Splider instead of GSL divides computation time by around 40.
 Many optimization are still to be implemented in Splider.
