@@ -22,12 +22,14 @@ The spline interpolation implementation itself is challenged in [SplineChallenge
 where we cache many interediate results which can be reused for every mode.
 More details are given in the next sections.
 
+# Benchmark
+
 A benchmark is implemented as executable [Challenge](Challenger/src/program/Challenge.cpp).
 By default, the benchmark uses the following sizing parameters:
 
 * `lmax` = 10, `nmax` = 30, which yields 3843 modes;
 * There are 33 x 50 = 1650 knots;
-* There are 1000 interpolation coordinates.
+* There are 1000 trajectory points.
 
 Here are preliminary results:
 
