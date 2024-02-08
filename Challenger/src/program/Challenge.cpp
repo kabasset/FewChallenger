@@ -96,6 +96,7 @@ public:
     Logging logger = Logging::getLogger("Challenge");
     const int size = args["size"].as<int>();
 
+    logger.info() << "Generating trajectory...";
     std::vector<double> ps(size);
     std::vector<double> es(size);
     std::vector<MemoryChallenger::Ellipse> ellipses(size);
@@ -103,7 +104,7 @@ public:
       ps[i] = 490. / size * (i + 1) + 10;
       es[i] = 32. / size * i;
       ellipses[i] = {ps[i], es[i]};
-      logger.debug() << ps[i] << ", " << es[i] << ", " << ellipses[i].y();
+      logger.debug() << "  " << ps[i] << ", " << es[i] << ", " << ellipses[i].y();
     }
 
     logger.info() << "Running benchmark...";
@@ -128,6 +129,9 @@ public:
 
     logger.info() << "  " << out[0] << " ... " << out[out.size() - 1];
     logger.info() << "  Done in " << duration.count() << "ms";
+    for (const auto& e : out) {
+      logger.debug() << "  " << e;
+    }
 
     return ExitCode::OK;
   }
