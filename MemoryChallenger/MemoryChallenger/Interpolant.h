@@ -4,7 +4,7 @@
 #ifndef _MEMORYCHALLENGER_INTERPOLANT_H
 #define _MEMORYCHALLENGER_INTERPOLANT_H
 
-#include "LinxCore/Raster.h"
+#include "Linx/Data/Raster.h"
 
 #include <gsl/gsl_interp2d.h>
 #include <gsl/gsl_spline.h>

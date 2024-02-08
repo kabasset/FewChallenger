@@ -6,8 +6,8 @@
 #include <algorithm>
 #include <cmath>
 #include <complex>
-#include <hdf5.h>
-#include <hdf5_hl.h>
+// #include <hdf5.h>
+// #include <hdf5_hl.h>
 #include <string>
 
 namespace Few {
@@ -18,7 +18,7 @@ const int Ny = 50;
 
 // initialize amplitude interpolants for each mode
 void create_amplitude_interpolant(
-    hid_t file_id,
+    // hid_t file_id,
     int l,
     int m,
     int n,
@@ -32,9 +32,9 @@ void create_amplitude_interpolant(
   // amplitude data has a real and imaginary part
   double* modeData = new double[2 * Ne * Ny];
 
-  char dataset_name[50];
+  // char dataset_name[50];
 
-  sprintf(dataset_name, "/l%dm%d/n%dk0", l, m, n);
+  // sprintf(dataset_name, "/l%dm%d/n%dk0", l, m, n);
 
   /* read dataset */
   // H5LTread_dataset_double(file_id, dataset_name, modeData); // FIXME
@@ -66,18 +66,15 @@ void create_amplitude_interpolant(
 // collect data and initialize amplitude interpolants
 void load_and_interpolate_amplitude_data(int lmax, int nmax, struct waveform_amps* amps, const std::string& few_dir) {
 
-  hid_t file_id;
-  hsize_t dims[2];
+  // hid_t file_id;
+  // hsize_t dims[2];
 
-  std::string fp = "few/files/Teuk_amps_a0.0_lmax_10_nmax_30_new.h5";
-  fp = few_dir + fp;
-  // file_id = H5Fopen(fp.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT); // FIXME
+  // std::string fp = "few/files/Teuk_amps_a0.0_lmax_10_nmax_30_new.h5";
+  // fp = few_dir + fp;
+  // file_id = H5Fopen(fp.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
 
   /* get the dimensions of the dataset */
   // H5LTget_dataset_info(file_id, "/grid", dims, NULL, NULL); // FIXME
-
-  /* create an appropriately sized array for the data */
-  // double* gridRaw = new double[dims[0] * dims[1]]; // FIXME
 
   /* read dataset */
   // H5LTread_dataset_double(file_id, "/grid", gridRaw); // FIXME
@@ -112,7 +109,7 @@ void load_and_interpolate_amplitude_data(int lmax, int nmax, struct waveform_amp
     for (int m = 0; m <= l; m++) {
       for (int n = -nmax; n <= nmax; n++) {
         create_amplitude_interpolant(
-            file_id,
+            // file_id,
             l,
             m,
             n,

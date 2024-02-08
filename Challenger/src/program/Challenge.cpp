@@ -3,8 +3,8 @@
 
 #include "Challenger/Challenger.h"
 #include "ElementsKernel/ProgramHeaders.h"
-#include "LinxRun/Chronometer.h"
-#include "LinxRun/ProgramOptions.h"
+#include "Linx/Run/Chronometer.h"
+#include "Linx/Run/ProgramOptions.h"
 
 #include <map>
 #include <string>
@@ -65,15 +65,14 @@ std::vector<std::complex<double>> runSplineChallenger(const std::vector<MemoryCh
     x[i] = {ellipses[i].y(), ellipses[i].e()};
   }
   const auto u = SplineChallenger::loadGrid();
-  const Splider::SplineIntervals u0(u[0]);
-  const Splider::SplineIntervals u1(u[1]);
-  Splider::BiSplineResampler<std::complex<double>, Splider::SplineCache::Lazy> resample(u0, u1, x);
+  const auto build = SplineChallenger::Spline::Multi::builder(u[0], u[1]);
+  auto cospline = build.cospline<std::complex<double>>(x);
 
   std::vector<std::complex<double>> out;
   for (Linx::Index l = 2; l <= lmax; ++l) {
     for (Linx::Index m = 0; m <= l; ++m) {
       for (Linx::Index n = -nmax; n <= nmax; ++n) {
-        const auto modal = resample(SplineChallenger::loadModeData({l, m, n}));
+        const auto modal = cospline(SplineChallenger::loadModeData({l, m, n}));
         out.insert(out.end(), modal.begin(), modal.end());
       }
     }
@@ -89,7 +88,7 @@ public:
     Linx::ProgramOptions options;
     options.named("case", "Test case: f (Few), m (MemoryChallenger), s (SplineChallenger)", 'f');
     options.named("size", "Number of trajectory points", 1);
-    return options.asPair();
+    return options.as_pair();
   }
 
   ExitCode mainMethod(std::map<std::string, VariableValue>& args) override {

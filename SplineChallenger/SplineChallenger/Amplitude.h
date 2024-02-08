@@ -4,13 +4,15 @@
 #ifndef _SPLINECHALLENGER_AMPLITUDE_H
 #define _SPLINECHALLENGER_AMPLITUDE_H
 
-#include "LinxCore/Raster.h"
+#include "Linx/Data/Raster.h"
 #include "MemoryChallenger/Amplitude.h" // Ellipse, Mode
-#include "Splider/BiSpline.h"
+#include "Splider/Lagrange.h"
 
 #include <array>
 
 namespace SplineChallenger {
+
+using Spline = Splider::Lagrange; // Simple local bicubic interpolation
 
 static constexpr Linx::Index Ny = 50;
 static constexpr Linx::Index Ne = 33;

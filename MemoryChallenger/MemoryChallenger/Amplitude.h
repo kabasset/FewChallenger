@@ -4,7 +4,7 @@
 #ifndef _MEMORYCHALLENGER_AMPLITUDE_H
 #define _MEMORYCHALLENGER_AMPLITUDE_H
 
-#include "LinxCore/Raster.h"
+#include "Linx/Data/Raster.h"
 #include "MemoryChallenger/Interpolant.h"
 
 #include <array>

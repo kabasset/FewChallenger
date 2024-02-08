@@ -2,13 +2,13 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
 
 elements_subdir(MemoryChallenger)
 
-elements_depends_on_subdirs(ElementsKernel LinxCore LinxRun)
+elements_depends_on_subdirs(ElementsKernel Linx)
 
 find_package(GSL)
 
 elements_add_library(MemoryChallenger src/lib/*.cpp
-                     INCLUDE_DIRS ElementsKernel LinxCore LinxRun GSL
-                     LINK_LIBRARIES ElementsKernel LinxCore LinxRun GSL
+                     INCLUDE_DIRS ElementsKernel Linx GSL
+                     LINK_LIBRARIES ElementsKernel Linx GSL
                      PUBLIC_HEADERS MemoryChallenger)
 
 elements_add_unit_test(Amplitude tests/src/Amplitude_test.cpp 
